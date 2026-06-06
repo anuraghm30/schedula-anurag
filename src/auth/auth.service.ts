@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
@@ -13,6 +14,8 @@ import { User } from '../users/interfaces/user.interface';
 export class AuthService {
   private users: User[] = [];
   private id = 1;
+
+  constructor(private jwtService: JwtService) {}
 
   async signup(signupDto: SignupDto) {
     const existingUser = this.users.find(
@@ -64,14 +67,14 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
     return {
-      message: 'Login successful',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      access_token: this.jwtService.sign(payload),
     };
   }
 
