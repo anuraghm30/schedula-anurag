@@ -10,6 +10,9 @@ import { UsersModule } from './users/users.module';
 import { DoctorController } from './doctor/doctor.controller';
 import { PatientController } from './patient/patient.controller';
 
+import { DoctorService } from './doctor/doctor.service';
+import { PatientService } from './patient/patient.service';
+
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -32,6 +35,10 @@ import { PatientController } from './patient/patient.controller';
     DoctorController,
     PatientController,
   ],
-  providers: [AppService],
+  providers: [
+  AppService,
+  DoctorService,
+  PatientService,
+],
 })
 export class AppModule {}
