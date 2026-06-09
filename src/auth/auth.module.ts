@@ -5,6 +5,8 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { jwtConstants } from './constants';
 
+import { UsersModule } from '../users/users.module';
+
 @Module({
   imports: [
     JwtModule.register({
@@ -13,8 +15,10 @@ import { jwtConstants } from './constants';
         expiresIn: '1h',
       },
     }),
+    UsersModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],
+  exports: [JwtModule],
 })
 export class AuthModule {}
