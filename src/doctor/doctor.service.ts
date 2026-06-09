@@ -13,10 +13,19 @@ export class DoctorService {
     private readonly doctorRepository: Repository<Doctor>,
   ) {}
 
-  async create(dto: CreateDoctorDto) {
-    const existingDoctor = await this.doctorRepository.findOne({
-      where: {},
-    });
+  async create(
+    dto: CreateDoctorDto,
+    userId: number,
+  ) {
+    const existingDoctor =
+      await this.doctorRepository.findOne({
+        where: {
+          user: {
+            id: userId,
+          },
+        },
+        relations: ['user'],
+      });
 
     if (existingDoctor) {
       return {
@@ -24,32 +33,57 @@ export class DoctorService {
       };
     }
 
-    const doctor = this.doctorRepository.create(dto);
+    const doctor =
+      this.doctorRepository.create(dto);
+
+    (doctor as any).user = {
+      id: userId,
+    };
 
     await this.doctorRepository.save(doctor);
 
     return {
-      message: 'Doctor profile created successfully',
+      message:
+        'Doctor profile created successfully',
       profile: doctor,
     };
   }
 
-  async findAll() {
-    const doctors = await this.doctorRepository.find();
+  async findOneByUserId(
+    userId: number,
+  ) {
+    const doctor =
+      await this.doctorRepository.findOne({
+        where: {
+          user: {
+            id: userId,
+          },
+        },
+        relations: ['user'],
+      });
 
-    if (doctors.length === 0) {
+    if (!doctor) {
       return {
         message: 'Doctor profile not found',
       };
     }
 
-    return doctors;
+    return doctor;
   }
 
-  async update(dto: UpdateDoctorDto) {
-    const doctor = await this.doctorRepository.findOne({
-      where: {},
-    });
+  async update(
+    dto: UpdateDoctorDto,
+    userId: number,
+  ) {
+    const doctor =
+      await this.doctorRepository.findOne({
+        where: {
+          user: {
+            id: userId,
+          },
+        },
+        relations: ['user'],
+      });
 
     if (!doctor) {
       return {
@@ -62,7 +96,8 @@ export class DoctorService {
     await this.doctorRepository.save(doctor);
 
     return {
-      message: 'Doctor profile updated successfully',
+      message:
+        'Doctor profile updated successfully',
       profile: doctor,
     };
   }

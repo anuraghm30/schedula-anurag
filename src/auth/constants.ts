@@ -1,3 +1,3 @@
 export const jwtConstants = {
-  secret: 'schedula-secret-key',
+  secret: process.env.JWT_SECRET || 'schedula-secret-key',
 };

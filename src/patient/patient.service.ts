@@ -13,10 +13,19 @@ export class PatientService {
     private readonly patientRepository: Repository<Patient>,
   ) {}
 
-  async create(dto: CreatePatientDto) {
-    const existingPatient = await this.patientRepository.findOne({
-      where: {},
-    });
+  async create(
+    dto: CreatePatientDto,
+    userId: number,
+  ) {
+    const existingPatient =
+      await this.patientRepository.findOne({
+        where: {
+          user: {
+            id: userId,
+          },
+        },
+        relations: ['user'],
+      });
 
     if (existingPatient) {
       return {
@@ -24,32 +33,57 @@ export class PatientService {
       };
     }
 
-    const patient = this.patientRepository.create(dto);
+    const patient =
+      this.patientRepository.create(dto);
+
+    (patient as any).user = {
+      id: userId,
+    };
 
     await this.patientRepository.save(patient);
 
     return {
-      message: 'Patient profile created successfully',
+      message:
+        'Patient profile created successfully',
       profile: patient,
     };
   }
 
-  async findAll() {
-    const patients = await this.patientRepository.find();
+  async findOneByUserId(
+    userId: number,
+  ) {
+    const patient =
+      await this.patientRepository.findOne({
+        where: {
+          user: {
+            id: userId,
+          },
+        },
+        relations: ['user'],
+      });
 
-    if (patients.length === 0) {
+    if (!patient) {
       return {
         message: 'Patient profile not found',
       };
     }
 
-    return patients;
+    return patient;
   }
 
-  async update(dto: UpdatePatientDto) {
-    const patient = await this.patientRepository.findOne({
-      where: {},
-    });
+  async update(
+    dto: UpdatePatientDto,
+    userId: number,
+  ) {
+    const patient =
+      await this.patientRepository.findOne({
+        where: {
+          user: {
+            id: userId,
+          },
+        },
+        relations: ['user'],
+      });
 
     if (!patient) {
       return {
@@ -62,7 +96,8 @@ export class PatientService {
     await this.patientRepository.save(patient);
 
     return {
-      message: 'Patient profile updated successfully',
+      message:
+        'Patient profile updated successfully',
       profile: patient,
     };
   }

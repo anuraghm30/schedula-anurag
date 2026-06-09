@@ -5,6 +5,7 @@ import {
   Patch,
   Body,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -17,26 +18,42 @@ import { UpdatePatientDto } from './dto/update-patient.dto';
 
 @Controller('patient')
 export class PatientController {
-  constructor(private readonly patientService: PatientService) {}
+  constructor(
+    private readonly patientService: PatientService,
+  ) {}
 
   @Post('profile')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('PATIENT')
-  createProfile(@Body() dto: CreatePatientDto) {
-    return this.patientService.create(dto);
+  createProfile(
+    @Body() dto: CreatePatientDto,
+    @Req() req,
+  ) {
+    return this.patientService.create(
+      dto,
+      req.user.sub,
+    );
   }
 
   @Get('profile')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('PATIENT')
-  getProfile() {
-    return this.patientService.findAll();
+  getProfile(@Req() req) {
+    return this.patientService.findOneByUserId(
+      req.user.sub,
+    );
   }
 
   @Patch('profile')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('PATIENT')
-  updateProfile(@Body() dto: UpdatePatientDto) {
-    return this.patientService.update(dto);
+  updateProfile(
+    @Body() dto: UpdatePatientDto,
+    @Req() req,
+  ) {
+    return this.patientService.update(
+      dto,
+      req.user.sub,
+    );
   }
 }

@@ -11,30 +11,30 @@ import { User } from '../users/entities/user.entity';
 @Entity()
 export class Doctor {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id: number;
 
   @Column()
-  fullName!: string;
+  fullName: string;
 
   @Column()
-  specialization!: string;
+  specialization: string;
 
   @Column()
-  experience!: number;
+  experience: number;
 
   @Column()
-  qualification!: string;
+  qualification: string;
 
   @Column()
-  consultationFee!: number;
+  consultationFee: number;
 
   @Column()
-  availability!: string;
+  availability: string;
 
   @Column()
-  profileDetails!: string;
+  profileDetails: string;
 
   @OneToOne(() => User)
   @JoinColumn()
-  user!: User;
+  user: User;
 }
