@@ -1,20 +1,69 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+import { Doctor } from './doctor.entity';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
+import { UpdateDoctorDto } from './dto/update-doctor.dto';
 
 @Injectable()
 export class DoctorService {
-  private doctors: CreateDoctorDto[] = [];
+  constructor(
+    @InjectRepository(Doctor)
+    private readonly doctorRepository: Repository<Doctor>,
+  ) {}
 
-  create(dto: CreateDoctorDto) {
-    this.doctors.push(dto);
+  async create(dto: CreateDoctorDto) {
+    const existingDoctor = await this.doctorRepository.findOne({
+      where: {},
+    });
+
+    if (existingDoctor) {
+      return {
+        message: 'Doctor profile already exists',
+      };
+    }
+
+    const doctor = this.doctorRepository.create(dto);
+
+    await this.doctorRepository.save(doctor);
 
     return {
       message: 'Doctor profile created successfully',
-      profile: dto,
+      profile: doctor,
     };
   }
 
-  findAll() {
-    return this.doctors;
+  async findAll() {
+    const doctors = await this.doctorRepository.find();
+
+    if (doctors.length === 0) {
+      return {
+        message: 'Doctor profile not found',
+      };
+    }
+
+    return doctors;
+  }
+
+  async update(dto: UpdateDoctorDto) {
+    const doctor = await this.doctorRepository.findOne({
+      where: {},
+    });
+
+    if (!doctor) {
+      return {
+        message: 'Doctor profile not found',
+      };
+    }
+
+    Object.assign(doctor, dto);
+
+    await this.doctorRepository.save(doctor);
+
+    return {
+      message: 'Doctor profile updated successfully',
+      profile: doctor,
+    };
   }
 }

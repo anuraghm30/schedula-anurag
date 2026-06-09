@@ -7,11 +7,8 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 
-import { DoctorController } from './doctor/doctor.controller';
-import { PatientController } from './patient/patient.controller';
-
-import { DoctorService } from './doctor/doctor.service';
-import { PatientService } from './patient/patient.service';
+import { DoctorModule } from './doctor/doctor.module';
+import { PatientModule } from './patient/patient.module';
 
 @Module({
   imports: [
@@ -23,22 +20,16 @@ import { PatientService } from './patient/patient.service';
       password: 'root123',
       database: 'schedula',
 
-      synchronize: true,      // ← change this
+      synchronize: true,
       autoLoadEntities: true,
     }),
 
     AuthModule,
     UsersModule,
+    DoctorModule,
+    PatientModule,
   ],
-  controllers: [
-    AppController,
-    DoctorController,
-    PatientController,
-  ],
-  providers: [
-  AppService,
-  DoctorService,
-  PatientService,
-],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

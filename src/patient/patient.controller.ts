@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Body,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +13,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 
 import { PatientService } from './patient.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
+import { UpdatePatientDto } from './dto/update-patient.dto';
 
 @Controller('patient')
 export class PatientController {
@@ -29,5 +31,12 @@ export class PatientController {
   @Roles('PATIENT')
   getProfile() {
     return this.patientService.findAll();
+  }
+
+  @Patch('profile')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PATIENT')
+  updateProfile(@Body() dto: UpdatePatientDto) {
+    return this.patientService.update(dto);
   }
 }
