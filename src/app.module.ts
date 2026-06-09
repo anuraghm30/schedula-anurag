@@ -20,7 +20,7 @@ import { PatientModule } from './patient/patient.module';
       password: 'root123',
       database: 'schedula',
 
-      synchronize: true,
+      synchronize: false,
       autoLoadEntities: true,
     }),
 
