@@ -18,16 +18,16 @@ import { PatientModule } from './patient/patient.module';
     }),
 
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: process.env.DATABASE_URL,
+    type: 'postgres',
+    url: process.env.DATABASE_URL,
 
-      ssl: {
-        rejectUnauthorized: false,
-      },
+    ssl: {
+      rejectUnauthorized: false,
+    },
 
-      synchronize: false,
-      autoLoadEntities: true,
-    }),
+    synchronize: false,
+    autoLoadEntities: true,
+  }),
 
     AuthModule,
     UsersModule,

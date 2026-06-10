@@ -17,8 +17,6 @@ export default new DataSource({
   },
 
   entities: [User, Doctor, Patient],
-
   migrations: ['src/migrations/*.ts'],
-
   synchronize: false,
 });
