@@ -6,6 +6,8 @@ import {
   Body,
   UseGuards,
   Req,
+  Query,
+  Param,
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -54,6 +56,30 @@ export class DoctorController {
     return this.doctorService.update(
       dto,
       req.user.sub,
+    );
+  }
+
+  @Get()
+  getDoctors(
+    @Query('specialization') specialization?: string,
+    @Query('search') search?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.doctorService.getDoctors(
+      specialization,
+      search,
+      page,
+      limit,
+    );
+  }
+
+  @Get(':id')
+  getDoctorById(
+    @Param('id') id: number,
+  ) {
+    return this.doctorService.getDoctorById(
+      Number(id),
     );
   }
 }
