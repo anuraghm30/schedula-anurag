@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,8 +23,8 @@ export class DoctorService {
     dto: CreateDoctorDto,
     userId: number,
   ) {
-    const existingDoctor =
-      await this.doctorRepository.findOne({
+    try {
+      const existingDoctor = await this.doctorRepository.findOne({
         where: {
           user: {
             id: userId,
@@ -32,33 +33,33 @@ export class DoctorService {
         relations: ['user'],
       });
 
-    if (existingDoctor) {
+      if (existingDoctor) {
+        return {
+          message: 'Doctor profile already exists',
+        };
+      }
+
+      const doctor = this.doctorRepository.create(dto);
+
+      doctor.user = { id: userId } as any;
+
+      await this.doctorRepository.save(doctor);
+
       return {
-        message: 'Doctor profile already exists',
+        message: 'Doctor profile created successfully',
+        profile: doctor,
       };
+    } catch (error) {
+      console.error('CREATE DOCTOR ERROR:', error);
+      throw new InternalServerErrorException(
+        'Failed to create doctor profile',
+      );
     }
-
-    const doctor =
-      this.doctorRepository.create(dto);
-
-    (doctor as any).user = {
-      id: userId,
-    };
-
-    await this.doctorRepository.save(doctor);
-
-    return {
-      message:
-        'Doctor profile created successfully',
-      profile: doctor,
-    };
   }
 
-  async findOneByUserId(
-    userId: number,
-  ) {
-    const doctor =
-      await this.doctorRepository.findOne({
+  async findOneByUserId(userId: number) {
+    try {
+      const doctor = await this.doctorRepository.findOne({
         where: {
           user: {
             id: userId,
@@ -67,21 +68,27 @@ export class DoctorService {
         relations: ['user'],
       });
 
-    if (!doctor) {
-      return {
-        message: 'Doctor profile not found',
-      };
-    }
+      if (!doctor) {
+        return {
+          message: 'Doctor profile not found',
+        };
+      }
 
-    return doctor;
+      return doctor;
+    } catch (error) {
+      console.error('FIND DOCTOR BY USER ID ERROR:', error);
+      throw new InternalServerErrorException(
+        'Failed to fetch doctor profile',
+      );
+    }
   }
 
   async update(
     dto: UpdateDoctorDto,
     userId: number,
   ) {
-    const doctor =
-      await this.doctorRepository.findOne({
+    try {
+      const doctor = await this.doctorRepository.findOne({
         where: {
           user: {
             id: userId,
@@ -90,21 +97,26 @@ export class DoctorService {
         relations: ['user'],
       });
 
-    if (!doctor) {
+      if (!doctor) {
+        return {
+          message: 'Doctor profile not found',
+        };
+      }
+
+      Object.assign(doctor, dto);
+
+      await this.doctorRepository.save(doctor);
+
       return {
-        message: 'Doctor profile not found',
+        message: 'Doctor profile updated successfully',
+        profile: doctor,
       };
+    } catch (error) {
+      console.error('UPDATE DOCTOR ERROR:', error);
+      throw new InternalServerErrorException(
+        'Failed to update doctor profile',
+      );
     }
-
-    Object.assign(doctor, dto);
-
-    await this.doctorRepository.save(doctor);
-
-    return {
-      message:
-        'Doctor profile updated successfully',
-      profile: doctor,
-    };
   }
 
   async getDoctors(
@@ -113,81 +125,85 @@ export class DoctorService {
     page = 1,
     limit = 10,
   ) {
-    page = Number(page);
-    limit = Number(limit);
+    try {
+      page = Number(page);
+      limit = Number(limit);
 
-    if (page < 1 || limit < 1) {
-      throw new BadRequestException(
-        'Page and limit must be greater than 0',
-      );
-    }
+      if (page < 1 || limit < 1) {
+        throw new BadRequestException(
+          'Page and limit must be greater than 0',
+        );
+      }
 
-    const query =
-      this.doctorRepository.createQueryBuilder(
-        'doctor',
-      );
+      const query = this.doctorRepository.createQueryBuilder('doctor');
 
-    if (specialization) {
-      query.andWhere(
-        'LOWER(doctor.specialization) = LOWER(:specialization)',
-        { specialization },
-      );
-    }
+      if (specialization) {
+        query.andWhere(
+          'LOWER(doctor.specialization) = LOWER(:specialization)',
+          { specialization },
+        );
+      }
 
-    if (search) {
-      query.andWhere(
-        'LOWER(doctor.fullName) LIKE LOWER(:search)',
-        {
-          search: `%${search}%`,
-        },
-      );
-    }
+      if (search) {
+        query.andWhere(
+          'LOWER(doctor.fullName) LIKE LOWER(:search)',
+          {
+            search: `%${search}%`,
+          },
+        );
+      }
 
-    const total =
-      await query.getCount();
+      const total = await query.getCount();
 
-    query.skip((page - 1) * limit);
-    query.take(limit);
+      query.skip((page - 1) * limit);
+      query.take(limit);
 
-    const doctors =
-      await query.getMany();
+      const doctors = await query.getMany();
 
-    if (!doctors.length) {
+      if (!doctors.length) {
+        return {
+          message: 'No doctors found',
+          data: [],
+          total,
+        };
+      }
+
       return {
-        message: 'No doctors found',
-        data: [],
+        page,
+        limit,
         total,
+        data: doctors,
       };
+    } catch (error) {
+      console.error('GET DOCTORS ERROR:', error);
+      throw new InternalServerErrorException(
+        'Failed to fetch doctors',
+      );
     }
-
-    return {
-      page,
-      limit,
-      total,
-      data: doctors,
-    };
   }
 
-  async getDoctorById(
-    id: number,
-  ) {
-    if (!id || id <= 0) {
-      throw new BadRequestException(
-        'Invalid doctor id',
-      );
-    }
+  async getDoctorById(id: number) {
+    try {
+      if (!id || id <= 0) {
+        throw new BadRequestException(
+          'Invalid doctor id',
+        );
+      }
 
-    const doctor =
-      await this.doctorRepository.findOne({
+      const doctor = await this.doctorRepository.findOne({
         where: { id },
       });
 
-    if (!doctor) {
-      throw new NotFoundException(
-        'Doctor not found',
-      );
-    }
+      if (!doctor) {
+        throw new NotFoundException(
+          'Doctor not found',
+        );
+      }
 
-    return doctor;
+      return doctor;
+    } catch (error) {
+      console.error('GET DOCTOR BY ID ERROR:', error);
+      throw error;
+    }
   }
 }

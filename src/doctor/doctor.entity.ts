@@ -2,7 +2,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
+  OneToOne,
   JoinColumn,
 } from 'typeorm';
 
@@ -34,7 +34,7 @@ export class Doctor {
   @Column()
   profileDetails: string;
 
-  @ManyToOne(() => User)
+  @OneToOne(() => User, (user) => user.doctorProfile)
   @JoinColumn()
   user: User;
 }

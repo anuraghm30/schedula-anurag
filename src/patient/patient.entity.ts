@@ -2,7 +2,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
+  OneToOne,
   JoinColumn,
 } from 'typeorm';
 
@@ -28,7 +28,7 @@ export class Patient {
   @Column({ nullable: true })
   healthInformation: string;
 
-  @ManyToOne(() => User)
+  @OneToOne(() => User, (user) => user.patientProfile)
   @JoinColumn()
   user: User;
 }
