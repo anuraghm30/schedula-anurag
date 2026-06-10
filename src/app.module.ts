@@ -25,7 +25,7 @@ import { PatientModule } from './patient/patient.module';
       rejectUnauthorized: false,
     },
 
-    synchronize: false,
+    synchronize: true,
     autoLoadEntities: true,
   }),
 
