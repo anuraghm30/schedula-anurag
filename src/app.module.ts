@@ -16,7 +16,7 @@ import { PatientModule } from './patient/patient.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    
+
     TypeOrmModule.forRoot({
     type: 'postgres',
     url: process.env.DATABASE_URL,
@@ -25,7 +25,7 @@ import { PatientModule } from './patient/patient.module';
       rejectUnauthorized: false,
     },
 
-    synchronize: true,
+    synchronize: false,
     autoLoadEntities: true,
   }),
 
