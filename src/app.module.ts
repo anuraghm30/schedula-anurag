@@ -11,6 +11,8 @@ import { UsersModule } from './users/users.module';
 import { DoctorModule } from './doctor/doctor.module';
 import { PatientModule } from './patient/patient.module';
 
+import { AvailabilityModule } from './availability/availability.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -33,6 +35,7 @@ import { PatientModule } from './patient/patient.module';
     UsersModule,
     DoctorModule,
     PatientModule,
+    AvailabilityModule,
   ],
   controllers: [AppController],
   providers: [AppService],
