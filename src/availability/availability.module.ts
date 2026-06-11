@@ -8,6 +8,12 @@ import { Doctor } from '../doctor/doctor.entity';
 import { RecurringAvailability } from './entities/recurring-availability.entity';
 import { CustomAvailability } from './entities/custom-availability.entity';
 
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+
+import { JwtService } from '@nestjs/jwt';
+import { Reflector } from '@nestjs/core';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -17,6 +23,12 @@ import { CustomAvailability } from './entities/custom-availability.entity';
     ]),
   ],
   controllers: [AvailabilityController],
-  providers: [AvailabilityService],
+  providers: [
+    AvailabilityService,
+    JwtAuthGuard,
+    RolesGuard,
+    JwtService,
+    Reflector,
+  ],
 })
 export class AvailabilityModule {}
