@@ -13,6 +13,7 @@ import { CustomAvailability } from './entities/custom-availability.entity';
 
 import { CreateRecurringAvailabilityDto } from './dto/create-recurring-availability.dto';
 import { CreateCustomAvailabilityDto } from './dto/create-custom-availability.dto';
+import { Appointment } from '../appointment/appointment.entity';
 
 @Injectable()
 export class AvailabilityService {
@@ -22,6 +23,9 @@ export class AvailabilityService {
 
     @InjectRepository(RecurringAvailability)
     private recurringRepository: Repository<RecurringAvailability>,
+
+    @InjectRepository(Appointment)
+    private appointmentRepository: Repository<Appointment>,
 
     @InjectRepository(CustomAvailability)
     private customRepository: Repository<CustomAvailability>,
@@ -323,4 +327,150 @@ export class AvailabilityService {
         'Custom availability deleted successfully',
     };
   }
+
+  async getAvailableSlots(
+  doctorId: number,
+  date: string,
+  duration = 30,
+) {
+  const doctor = await this.doctorRepository.findOne({
+    where: { id: doctorId },
+  });
+
+  if (!doctor) {
+    throw new NotFoundException(
+      'Doctor not found',
+    );
+  }
+
+  // Validate duration
+  if (![10, 15, 30].includes(duration)) {
+    throw new BadRequestException(
+      'Duration must be 10, 15 or 30 minutes',
+    );
+  }
+
+  // Validate date
+  const selectedDate = new Date(date);
+
+  if (isNaN(selectedDate.getTime())) {
+    throw new BadRequestException(
+      'Invalid date format',
+    );
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const checkDate = new Date(date);
+  checkDate.setHours(0, 0, 0, 0);
+
+  if (checkDate < today) {
+    throw new BadRequestException(
+      'Past dates are not allowed',
+    );
+  }
+
+  const customAvailability =
+    await this.customRepository.find({
+      where: {
+        doctor: { id: doctorId },
+        date,
+      },
+    });
+
+  let startTime = '';
+  let endTime = '';
+
+  // Custom availability overrides recurring
+  if (customAvailability.length > 0) {
+    startTime =
+      customAvailability[0].startTime;
+    endTime =
+      customAvailability[0].endTime;
+  } else {
+    const dayOfWeek = new Date(date)
+      .toLocaleDateString('en-US', {
+        weekday: 'long',
+      });
+
+    const recurringAvailability =
+      await this.recurringRepository.findOne({
+        where: {
+          doctor: { id: doctorId },
+          dayOfWeek,
+        },
+      });
+
+    if (!recurringAvailability) {
+      return [];
+    }
+
+    startTime =
+      recurringAvailability.startTime;
+    endTime =
+      recurringAvailability.endTime;
+  }
+
+  // Only BOOKED appointments block slots
+  const bookedAppointments =
+    await this.appointmentRepository.find({
+      where: {
+        doctor: { id: doctorId },
+        appointmentDate: date,
+        status: 'BOOKED',
+      },
+    });
+
+  const bookedSlots =
+    bookedAppointments.map(
+      (appointment) =>
+        appointment.appointmentTime,
+    );
+
+  const slots: string[] = [];
+
+  let current = startTime;
+
+  const now = new Date();
+
+  const isToday =
+    new Date(date).toDateString() ===
+    now.toDateString();
+
+  while (current < endTime) {
+    const [hours, minutes] =
+      current.split(':').map(Number);
+
+    const slotDateTime = new Date(date);
+    slotDateTime.setHours(
+      hours,
+      minutes,
+      0,
+      0,
+    );
+
+    if (
+      !bookedSlots.includes(current) &&
+      (!isToday || slotDateTime > now)
+    ) {
+      slots.push(current);
+    }
+
+    const next = new Date();
+    next.setHours(hours);
+    next.setMinutes(
+      minutes + duration,
+    );
+
+    current =
+      next.toTimeString().slice(0, 5);
+  }
+
+  if (slots.length === 0) {
+    return [];
+  }
+
+  return slots;
+}
 }

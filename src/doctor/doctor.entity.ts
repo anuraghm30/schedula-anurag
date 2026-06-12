@@ -11,6 +11,7 @@ import { User } from '../users/entities/user.entity';
 
 import { RecurringAvailability } from '../availability/entities/recurring-availability.entity';
 import { CustomAvailability } from '../availability/entities/custom-availability.entity';
+import { Appointment } from '../appointment/appointment.entity';
 
 @Entity()
 export class Doctor {
@@ -53,4 +54,10 @@ export class Doctor {
     (availability) => availability.doctor,
   )
   customAvailabilities!: CustomAvailability[];
+
+  @OneToMany(
+    () => Appointment,
+    (appointment) => appointment.doctor,
+  )
+  appointments: Appointment[];
 }

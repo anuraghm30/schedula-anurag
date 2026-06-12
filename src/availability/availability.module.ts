@@ -14,12 +14,15 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
 
+import { Appointment } from '../appointment/appointment.entity';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      Doctor,
-      RecurringAvailability,
-      CustomAvailability,
+    Doctor,
+    RecurringAvailability,
+    CustomAvailability,
+    Appointment,
     ]),
   ],
   controllers: [AvailabilityController],

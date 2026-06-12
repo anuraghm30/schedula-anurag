@@ -20,6 +20,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
+
 @Controller('doctor/availability')
 export class AvailabilityController {
   constructor(
@@ -44,6 +45,18 @@ export class AvailabilityController {
     return this.availabilityService.createCustomAvailability(dto);
   }
 
+ @Get('slots')
+getAvailableSlots(
+  @Query('doctorId') doctorId: number,
+  @Query('date') date: string,
+  @Query('duration') duration = 30,
+) {
+  return this.availabilityService.getAvailableSlots(
+    Number(doctorId),
+    date,
+    Number(duration),
+  );
+}
   // MUST COME BEFORE :doctorId
   @Get('custom/:doctorId')
   getCustomAvailability(
