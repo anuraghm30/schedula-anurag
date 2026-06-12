@@ -12,6 +12,7 @@ import { DoctorModule } from './doctor/doctor.module';
 import { PatientModule } from './patient/patient.module';
 
 import { AvailabilityModule } from './availability/availability.module';
+import { AppointmentModule } from './appointment/appointment.module';
 
 @Module({
   imports: [
@@ -20,22 +21,23 @@ import { AvailabilityModule } from './availability/availability.module';
     }),
 
     TypeOrmModule.forRoot({
-    type: 'postgres',
-    url: process.env.DATABASE_URL,
+      type: 'postgres',
+      url: process.env.DATABASE_URL,
 
-    ssl: {
-      rejectUnauthorized: false,
-    },
+      ssl: {
+        rejectUnauthorized: false,
+      },
 
-    synchronize: false,
-    autoLoadEntities: true,
-  }),
+      synchronize: true, // <-- CHANGE THIS
+      autoLoadEntities: true,
+    }),
 
     AuthModule,
     UsersModule,
     DoctorModule,
     PatientModule,
     AvailabilityModule,
+    AppointmentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
